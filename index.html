@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wochenplan</title>
+<style>
+:root{
+  --bg:#f3f5f7; --card:#fff; --ink:#1d2330; --muted:#6b7280; --line:#e2e6eb;
+  --accent:#44403c;
+  --p0-bg:#fef3c7; --p0-ink:#92400e;
+  --p1-bg:#dcfce7; --p1-ink:#166534;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:14px 12px 40px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:22px;margin:0;line-height:1.2}
+.week{font-size:14px;color:var(--muted);margin-top:4px}
+.nav{display:flex;gap:6px}
+button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer;min-height:40px}
+button:hover{border-color:#b7c0cc}
+button:active{transform:scale(.98)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px}
+
+/* Summary */
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.chip{font-size:13px;font-weight:600;padding:6px 10px;border-radius:999px}
+.chip.p0{background:var(--p0-bg);color:var(--p0-ink)}
+.chip.p1{background:var(--p1-bg);color:var(--p1-ink)}
+
+/* Desktop table */
+.desk{display:none;overflow-x:auto}
+table{width:100%;border-collapse:separate;border-spacing:5px;table-layout:fixed}
+th{font-size:13px;font-weight:600;color:var(--muted);text-align:center;padding:2px 0}
+th .dt{font-weight:400;font-size:12px}
+th.corner{width:130px}
+td.label{text-align:left;font-weight:600;font-size:15px;padding-left:4px;vertical-align:middle}
+td.label small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+
+/* Mobile cards */
+.mob{display:grid;gap:10px}
+.day{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.day h2{font-size:15px;margin:0 0 6px}
+.day h2 span{font-weight:400;color:var(--muted);font-size:13px;margin-left:4px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid #f0f2f5}
+.row:first-of-type{border-top:0}
+.row .label{font-weight:600;font-size:15px}
+.row .label small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+
+/* Select (shared) */
+.pick{
+  width:100%;min-height:44px;border-radius:10px;border:1px solid transparent;
+  font:inherit;font-size:15px;font-weight:600;text-align:center;
+  padding:6px 26px 6px 8px;appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-repeat:no-repeat;background-position:right 9px center;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' fill='none' stroke-width='1.6'/%3E%3C/svg%3E");
+}
+.pick.p0{background-color:var(--p0-bg);color:var(--p0-ink)}
+.row .pick{width:150px;max-width:50%}
+.pick.p1{background-color:var(--p1-bg);color:var(--p1-ink)}
+.pick:hover{border-color:#c5ccd6}
+.row .pick{max-width:50%}
+
+/* Settings & export */
+details{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+summary{cursor:pointer;font-weight:600;font-size:15px;min-height:36px;display:flex;align-items:center}
+.grid2{display:grid;gap:10px;margin-top:10px}
+label.f{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+input[type=text],input[type=time],select.plain{font:inherit;font-size:15px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;color:var(--ink);background:#fff;min-height:42px;width:100%}
+.times{display:grid;gap:10px}
+.trow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end}
+.trow .name{font-weight:600;font-size:15px;padding-bottom:10px}
+.export{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:grid;gap:10px}
+.export p{margin:0;font-size:13px;color:var(--muted);line-height:1.45}
+.exp-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.exp-row select.plain{width:auto;min-width:160px}
+
+@media (min-width:520px){
+  .desk{display:block}
+  .mob{display:none}
+  .grid2{grid-template-columns:1fr 1fr}
+}
+@media (min-width:520px) and (max-width:700px){ .row .pick{width:120px} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Wochenplan</h1>
+      <div class="week" id="weekLabel"></div>
+    </div>
+    <div class="nav">
+      <button id="prev" aria-label="Vorherige Woche">&larr;</button>
+      <button id="today">Heute</button>
+      <button id="next" aria-label="Nächste Woche">&rarr;</button>
+    </div>
+  </header>
+
+  <div class="card" id="app">
+    <div class="desk" id="desk"></div>
+    <div class="mob" id="mob"></div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button id="copyPrev">Vorwoche übernehmen</button>
+  </div>
+
+  <details>
+    <summary>Einstellungen: Namen &amp; Zeiten</summary>
+    <div class="grid2">
+      <div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Personen</div>
+        <div id="names" style="display:grid;gap:8px"></div>
+      </div>
+      <div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Zeiten (Start – Ende)</div>
+        <div class="times" id="times"></div>
+      </div>
+    </div>
+
+    <div class="export">
+      <div>
+        <strong style="font-size:15px">Export in den Apple Kalender</strong>
+        <p>Erstellt eine .ics-Datei mit allen Terminen der angezeigten Woche(n). Termine werden mit einer Erinnerung 10 Minuten vorher angelegt.</p>
+      </div>
+      <div class="exp-row">
+        <select id="weeksSel" class="plain" aria-label="Anzahl Wochen">
+          <option value="1">Nur diese Woche</option>
+          <option value="2">2 Wochen ab hier</option>
+          <option value="4" selected>4 Wochen ab hier</option>
+          <option value="8">8 Wochen ab hier</option>
+          <option value="12">12 Wochen ab hier</option>
+        </select>
+        <button class="primary" id="exportBtn">Als Kalender exportieren</button>
+      </div>
+      <p>Auf dem iPhone/iPad: Datei in den Downloads öffnen und „Alle hinzufügen“ wählen. Auf dem Mac: Doppelklick auf die Datei.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+const DAYS = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag'];
+const DAY_SHORT = ['Mo','Di','Mi','Do','Fr'];
+
+// Personen: Index 0 = erste Person, 1 = zweite Person (Farbe p0 / p1)
+let people = ['Lars','Julia'];
+
+let acts = [
+  {id:'fruehstueck', label:'Frühstück',  start:'07:00', end:'07:30'},
+  {id:'bringen',     label:'Bringen',    start:'08:00', end:'08:30'},
+  {id:'abholen',     label:'Abholen',    start:'15:30', end:'16:00'},
+  {id:'abendessen',  label:'Abendessen', start:'18:30', end:'19:30'}
+];
+
+// Startplan aus der Vorlage (0 = Lars, 1 = Julia)
+const DEFAULT_PLAN = {
+  fruehstueck: [0,1,1,0,0],
+  bringen:     [0,1,1,0,0],
+  abholen:     [1,0,1,1,1],
+  abendessen:  [1,0,0,0,0]
+};
+
+const weeks = new Map();           // Wochen-Key -> Plan (nur im Speicher)
+let weekStart = mondayOf(new Date());
+
+/* ---------- Hilfsfunktionen ---------- */
+const pad = n => String(n).padStart(2,'0');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function mondayOf(d){
+  const x = new Date(d); x.setHours(0,0,0,0);
+  x.setDate(x.getDate() - ((x.getDay()+6)%7));
+  return x;
+}
+function dayKey(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function addDays(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function dayDate(i){ return addDays(weekStart, i); }
+function isoWeek(d){
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y0 = new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return Math.ceil(((t - y0)/86400000 + 1)/7);
+}
+function getPlan(monday){
+  const k = dayKey(monday);
+  if(!weeks.has(k)) weeks.set(k, JSON.parse(JSON.stringify(DEFAULT_PLAN)));
+  return weeks.get(k);
+}
+
+/* ---------- Rendering ---------- */
+function selectHTML(a, i, val){
+  return `<select class="pick p${val}" data-act="${a.id}" data-day="${i}" aria-label="${esc(a.label)}, ${DAYS[i]}">`+
+    people.map((p,j)=>`<option value="${j}"${j===val?' selected':''}>${esc(p)}</option>`).join('') +
+  `</select>`;
+}
+
+function renderTable(plan){
+  const head = `<tr><th class="corner"></th>` + DAYS.map((d,i)=>{
+    const dt = dayDate(i);
+    return `<th scope="col">${DAY_SHORT[i]}<br><span class="dt">${pad(dt.getDate())}.${pad(dt.getMonth()+1)}.</span></th>`;
+  }).join('') + `</tr>`;
+  const rows = acts.map(a => `<tr><td class="label">${esc(a.label)}<small>${a.start} – ${a.end}</small></td>` +
+    DAYS.map((_,i)=>`<td>${selectHTML(a,i,plan[a.id][i])}</td>`).join('') + `</tr>`).join('');
+  return `<table><caption class="sr-only" style="position:absolute;left:-9999px">Wochenplan</caption><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderCards(plan){
+  return DAYS.map((d,i)=>{
+    const dt = dayDate(i);
+    return `<section class="day"><h2>${d}<span>${pad(dt.getDate())}.${pad(dt.getMonth()+1)}.</span></h2>` +
+      acts.map(a => `<div class="row"><div class="label">${esc(a.label)}<small>${a.start} – ${a.end}</small></div>${selectHTML(a,i,plan[a.id][i])}</div>`).join('') +
+      `</section>`;
+  }).join('');
+}
+
+function renderSummary(plan){
+  const counts = people.map((_,j)=>{
+    let c = 0; for(const a of acts) for(const v of plan[a.id]) if(v===j) c++;
+    return c;
+  });
+  document.getElementById('summary').innerHTML = people.map((p,j)=>
+    `<span class="chip p${j}">${esc(p)}: ${counts[j]} Termine</span>`).join('');
+}
+
+function renderPlan(){
+  const plan = getPlan(weekStart);
+  const end = addDays(weekStart,4);
+  document.getElementById('weekLabel').textContent =
+    `KW ${isoWeek(weekStart)} · ${pad(weekStart.getDate())}.${pad(weekStart.getMonth()+1)}. – ${pad(end.getDate())}.${pad(end.getMonth()+1)}.${end.getFullYear()}`;
+  document.getElementById('desk').innerHTML = renderTable(plan);
+  document.getElementById('mob').innerHTML = renderCards(plan);
+  renderSummary(plan);
+}
+
+function renderSettings(){
+  document.getElementById('names').innerHTML = people.map((p,j)=>
+    `<label class="f">Person ${j+1}<input type="text" data-name="${j}" value="${esc(p)}" maxlength="20"></label>`).join('');
+  document.getElementById('times').innerHTML = acts.map((a,k)=>
+    `<div class="trow">
+       <div class="name">${esc(a.label)}</div>
+       <label class="f">Start<input type="time" data-idx="${k}" data-field="start" value="${a.start}"></label>
+       <label class="f">Ende<input type="time" data-idx="${k}" data-field="end" value="${a.end}"></label>
+     </div>`).join('');
+}
+
+/* ---------- Export (ICS) ---------- */
+function icsEsc(s){ return String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n'); }
+function localStamp(d, time){
+  const [h,m] = time.split(':');
+  return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(h)}${pad(m)}00`;
+}
+function utcStamp(d){
+  return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds())+'Z';
+}
+function buildICS(weekCount){
+  const out = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Wochenplan//DE','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Wochenplan','X-WR-TIMEZONE:Europe/Berlin'];
+  const stamp = utcStamp(new Date());
+  for(let w=0; w<weekCount; w++){
+    const monday = addDays(weekStart, 7*w);
+    const plan = getPlan(monday);
+    for(let i=0;i<5;i++){
+      const d = addDays(monday,i);
+      for(const a of acts){
+        const who = people[plan[a.id][i]];
+        out.push(
+          'BEGIN:VEVENT',
+          `UID:${dayKey(d)}-${a.id}@wochenplan.local`,
+          `DTSTAMP:${stamp}`,
+          `DTSTART:${localStamp(d,a.start)}`,
+          `DTEND:${localStamp(d,a.end)}`,
+          `SUMMARY:${icsEsc(a.label+': '+who)}`,
+          `DESCRIPTION:${icsEsc('Wochenplan – '+a.label+' ('+who+')')}`,
+          'TRANSP:OPAQUE',
+          'BEGIN:VALARM','ACTION:DISPLAY','TRIGGER:-PT10M',`DESCRIPTION:${icsEsc(a.label+' in 10 Minuten')}`,'END:VALARM',
+          'END:VEVENT'
+        );
+      }
+    }
+  }
+  out.push('END:VCALENDAR');
+  return out.join('\r\n');
+}
+function exportICS(){
+  const n = +document.getElementById('weeksSel').value;
+  const blob = new Blob([buildICS(n)], {type:'text/calendar;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `wochenplan_KW${pad(isoWeek(weekStart))}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+
+/* ---------- Events ---------- */
+document.getElementById('app').addEventListener('change', e => {
+  const t = e.target;
+  if(t.matches('select[data-act]')){
+    const plan = getPlan(weekStart);
+    const i = +t.dataset.day, id = t.dataset.act, val = +t.value;
+    plan[id][i] = val;
+    // beide Layouts synchron halten
+    document.querySelectorAll(`select[data-act="${id}"][data-day="${i}"]`).forEach(s=>{
+      s.value = String(val); s.className = 'pick p'+val;
+    });
+    renderSummary(plan);
+  }
+});
+
+document.getElementById('names').addEventListener('input', e => {
+  const j = +e.target.dataset.name;
+  people[j] = e.target.value.trim() || `Person ${j+1}`;
+  renderPlan();
+});
+
+document.getElementById('times').addEventListener('change', e => {
+  const k = +e.target.dataset.idx;
+  if(e.target.value) acts[k][e.target.dataset.field] = e.target.value;
+  renderPlan();
+});
+
+document.getElementById('prev').onclick  = () => { weekStart = addDays(weekStart,-7); renderPlan(); };
+document.getElementById('next').onclick  = () => { weekStart = addDays(weekStart, 7); renderPlan(); };
+document.getElementById('today').onclick = () => { weekStart = mondayOf(new Date()); renderPlan(); };
+document.getElementById('copyPrev').onclick = () => {
+  const prev = getPlan(addDays(weekStart,-7));
+  weeks.set(dayKey(weekStart), JSON.parse(JSON.stringify(prev)));
+  renderPlan();
+};
+document.getElementById('exportBtn').onclick = exportICS;
+
+/* ---------- Start ---------- */
+renderSettings();
+renderPlan();
+</script>
+</body>
+</html>
